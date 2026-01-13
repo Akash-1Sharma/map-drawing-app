@@ -18,30 +18,37 @@ export const circleToPolygon = (
 
 /**
  * Handles overlap between polygon-like features
+ * - Blocks full enclosure
+ * - Auto-trims partial overlaps (cumulative)
  */
 export const handlePolygonOverlap = (
-  newFeature: Feature<Polygon | MultiPolygon>,   // ✅ FIXED
+  newFeature: Feature<Polygon | MultiPolygon>,
   existing: Feature<Polygon | MultiPolygon>[]
 ): Feature<Polygon | MultiPolygon> | null => {
 
+  let current: Feature<Polygon | MultiPolygon> = newFeature;
+
   for (const poly of existing) {
 
-    // ❌ Full enclosure
-    if (turf.booleanContains(newFeature, poly)) {
+    // ❌ Full enclosure → block
+    if (turf.booleanContains(current, poly)) {
       notifyError('Shape cannot fully enclose another shape');
       return null;
     }
 
-    // ✂ Any intersection → auto-trim
-    if (turf.booleanIntersects(newFeature, poly)) {
+    // ✂ Trim only real overlaps
+    if (turf.booleanOverlap(current, poly)) {
       const diff = turf.difference(
-        turf.featureCollection([newFeature, poly])
+        turf.featureCollection([current, poly])
       );
 
-      if (!diff) return null;
-      return diff as Feature<Polygon | MultiPolygon>;
+      if (!diff) {
+        return null;
+      }
+
+      current = diff as Feature<Polygon | MultiPolygon>;
     }
   }
 
-  return newFeature;
+  return current;
 };

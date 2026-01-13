@@ -18,13 +18,14 @@ const MapToolbar = () => {
         Drawing Rules
       </div>
 
-      <ul style={{ paddingLeft: 18, margin: 0, lineHeight: '1.6' }}>
-        <li>Polygons, rectangles & circles cannot overlap</li>
-        <li>Overlaps are auto-trimmed</li>
-        <li>Full enclosure is blocked</li>
-        <li>Lines can cross freely</li>
-        <li>Edit & delete supported</li>
-      </ul>
+     <ul style={{ paddingLeft: 18, margin: 0, lineHeight: '1.6' }}>
+  <li>🟩 <strong>Polygons</strong>, rectangles & circles cannot overlap</li>
+  <li>✂️ Partial overlaps are auto-trimmed</li>
+  <li>⛔ Full enclosure is blocked</li>
+  <li>➖ Lines can cross freely</li>
+  <li>✏️ Edit & 🗑️ delete supported</li>
+</ul>
+
     </div>
   );
 };

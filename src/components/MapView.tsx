@@ -4,7 +4,6 @@ import L from 'leaflet';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { useRef } from 'react';
 
-
 import { useMapFeatures } from '../hooks/useMapFeatures';
 import { SHAPE_LIMITS } from '../config/shapeLimits';
 import {
@@ -23,6 +22,7 @@ type ShapeType = 'polygon' | 'rectangle' | 'circle' | 'polyline';
 
 const MapView = () => {
   const featureGroupRef = useRef<L.FeatureGroup>(null);
+
   const {
     features,
     addFeature,
@@ -45,19 +45,18 @@ const MapView = () => {
     else if (layer instanceof L.Polygon) shapeType = 'polygon';
     else if (layer instanceof L.Polyline) shapeType = 'polyline';
 
-    /* 🚫 Shape limit check */
+    if (!shapeType) return;
+
+    /* 🚫 Shape limit */
     const count = features.filter(f => f.shapeType === shapeType).length;
-    if (shapeType && count >= SHAPE_LIMITS[shapeType]) {
+    if (count >= SHAPE_LIMITS[shapeType]) {
       notifyWarning(`Maximum ${shapeType} limit reached`);
       layer.remove();
       return;
     }
 
-    /* 🧠 Overlap logic */
-    if (
-      shapeType &&
-      ['polygon', 'rectangle', 'circle'].includes(shapeType)
-    ) {
+    /* 🧠 Overlap logic (polygon-like only) */
+    if (['polygon', 'rectangle', 'circle'].includes(shapeType)) {
       let polygonForCheck: Feature<Polygon | MultiPolygon>;
 
       if (layer instanceof L.Circle) {
@@ -85,7 +84,26 @@ const MapView = () => {
         return;
       }
 
-      geoJson.geometry = processed.geometry;
+      /* 🔥 VISUAL AUTO-TRIM FIX */
+      if (processed.geometry !== geoJson.geometry) {
+        layer.remove();
+
+        const newLayer = L.geoJSON(processed).getLayers()[0] as any;
+        const fg = featureGroupRef.current;
+        if (fg) fg.addLayer(newLayer);
+
+        const id = Date.now().toString();
+        newLayer._featureId = id;
+
+        addFeature({
+          id,
+          feature: processed,
+          shapeType,
+        });
+
+        notifySuccess(`${shapeType} added with auto-trim`);
+        return;
+      }
     }
 
     const id = Date.now().toString();
@@ -94,7 +112,7 @@ const MapView = () => {
     addFeature({
       id,
       feature: geoJson,
-      shapeType: shapeType as ShapeType,
+      shapeType,
     });
 
     notifySuccess(`${shapeType} added successfully`);
@@ -103,15 +121,14 @@ const MapView = () => {
   /* ================= EDIT START ================= */
 
   const onEditStart = () => {
-  const fg = featureGroupRef.current;
-  if (!fg) return;
+    const fg = featureGroupRef.current;
+    if (!fg) return;
 
-  fg.eachLayer((layer: any) => {
-    if (!layer._featureId) return;
-    backupFeature(layer._featureId, layer.toGeoJSON());
-  });
-};
-
+    fg.eachLayer((layer: any) => {
+      if (!layer._featureId) return;
+      backupFeature(layer._featureId, layer.toGeoJSON());
+    });
+  };
 
   /* ================= EDIT END ================= */
 
@@ -125,6 +142,7 @@ const MapView = () => {
 
       let geoJson = layer.toGeoJSON() as Feature;
 
+      /* Lines are free */
       if (featureMeta.shapeType === 'polyline') {
         updateFeature(id, geoJson);
         notifySuccess('Line updated');
@@ -162,35 +180,42 @@ const MapView = () => {
         return;
       }
 
-      geoJson.geometry = processed.geometry;
-      updateFeature(id, geoJson);
+      /* 🔥 VISUAL AUTO-TRIM DURING EDIT */
+      layer.remove();
+
+      const newLayer = L.geoJSON(processed).getLayers()[0] as any;
+      const fg = featureGroupRef.current;
+      if (fg) fg.addLayer(newLayer);
+
+      newLayer._featureId = id;
+      updateFeature(id, processed);
+
       notifySuccess('Shape updated');
     });
   };
 
   /* ================= DELETE ================= */
 
-const onDeleted = (e: any) => {
-  let deletedCount = 0;
+  const onDeleted = (e: any) => {
+    let deletedCount = 0;
 
-  e.layers.eachLayer((layer: any) => {
-    const id = layer._featureId;
-    if (!id) return;
+    e.layers.eachLayer((layer: any) => {
+      const id = layer._featureId;
+      if (!id) return;
 
-    deleteFeature(id);
-    deletedCount++;
-  });
+      deleteFeature(id);
+      deletedCount++;
+    });
 
-  if (deletedCount > 0) {
-    notifySuccess(
-      deletedCount === 1
-        ? 'Shape deleted'
-        : `${deletedCount} shapes deleted`
-    );
-  }
-};
-
-
+    if (deletedCount > 0) {
+      notifySuccess(
+        deletedCount === 1
+          ? 'Shape deleted'
+          : `${deletedCount} shapes deleted`,
+        'delete-toast'
+      );
+    }
+  };
 
   return (
     <MapContainer
@@ -199,6 +224,7 @@ const onDeleted = (e: any) => {
       style={{ height: '100vh' }}
     >
       <MapToolbar />
+      <AppHeader />
 
       <TileLayer
         attribution="© OpenStreetMap"
@@ -206,7 +232,6 @@ const onDeleted = (e: any) => {
       />
 
       <FeatureGroup ref={featureGroupRef}>
-
         <EditControl
           position="topright"
           onCreated={onCreated}
@@ -214,27 +239,24 @@ const onDeleted = (e: any) => {
           onEdited={onEdited}
           onDeleted={onDeleted}
           draw={{
-  polyline: {
-    shapeOptions: { color: '#1e88e5', weight: 4 },
-  },
-  polygon: {
-    shapeOptions: { color: '#43a047', fillOpacity: 0.4 },
-  },
-  rectangle: {
-    shapeOptions: { color: '#f4511e', fillOpacity: 0.4 },
-  },
-  circle: {
-    shapeOptions: { color: '#8e24aa', fillOpacity: 0.4 },
-  },
-  marker: false,
-  circlemarker: false,
-}}
-
+            polyline: {
+              shapeOptions: { color: '#1e88e5', weight: 4 },
+            },
+            polygon: {
+              shapeOptions: { color: '#43a047', fillOpacity: 0.4,weight: 2, },
+            },
+            rectangle: {
+              shapeOptions: { color: '#f4511e', fillOpacity: 0.4 },
+            },
+            circle: {
+              shapeOptions: { color: '#8e24aa', fillOpacity: 0.4 },
+            },
+            marker: false,
+            circlemarker: false,
+          }}
         />
       </FeatureGroup>
-      <AppHeader />
     </MapContainer>
-    
   );
 };
 
