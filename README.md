@@ -78,10 +78,12 @@ cd map-drawing-app
 
 Install Dependencies
 npm install
+npm install leaflet react-leaflet leaflet-draw react-leaflet-draw @turf/turf file-saver
+npm install --save-dev @types/leaflet @types/file-saver @types/geojson
 
 Start Development Server
 npm start
-
+or npm run dev
 
 App runs at:
 👉 http://localhost:3000
@@ -105,15 +107,11 @@ App runs at:
 
 UI & UX Highlights
 
-Floating instruction panel
-
-Color-coded shapes
-
-Toast notifications (no blocking alerts)
-
-Clean, professional layout
-
-Smooth interaction flow
+1.Floating instruction panel
+2.Color-coded shapes
+3.Toast notifications (no blocking alerts)
+4.Clean, professional layout
+5.Smooth interaction flow
 
 👤 Author
 

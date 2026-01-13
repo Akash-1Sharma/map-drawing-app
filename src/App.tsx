@@ -17,14 +17,14 @@ function App() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <ToastContainer
-  position="top-center"
-  autoClose={2500}
-  hideProgressBar={false}
-  newestOnTop
-  closeOnClick
-  pauseOnHover
-  theme="colored"
-/>
+      position="top-center"
+      autoClose={2500}
+      hideProgressBar={false}
+      newestOnTop
+      pauseOnHover
+      closeOnClick
+      theme="colored"
+    />
     </>
   );
 }

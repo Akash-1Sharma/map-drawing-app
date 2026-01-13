@@ -6,7 +6,7 @@ const MapToolbar = () => {
         bottom: 16,
         left: 16,
         zIndex: 1000,
-        background: '#ffffff',
+        background: '#b79c9c59',
         padding: '14px 18px',
         borderRadius: '10px',
         boxShadow: '0 6px 18px rgba(0,0,0,0.15)',

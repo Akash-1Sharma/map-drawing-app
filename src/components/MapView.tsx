@@ -3,7 +3,6 @@ import { EditControl } from 'react-leaflet-draw';
 import L from 'leaflet';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { useRef } from 'react';
-
 import { useMapFeatures } from '../hooks/useMapFeatures';
 import { SHAPE_LIMITS } from '../config/shapeLimits';
 import {
@@ -22,7 +21,6 @@ type ShapeType = 'polygon' | 'rectangle' | 'circle' | 'polyline';
 
 const MapView = () => {
   const featureGroupRef = useRef<L.FeatureGroup>(null);
-
   const {
     features,
     addFeature,
@@ -180,7 +178,7 @@ const MapView = () => {
         return;
       }
 
-      /* 🔥 VISUAL AUTO-TRIM DURING EDIT */
+      /*VISUAL AUTO-TRIM DURING EDIT */
       layer.remove();
 
       const newLayer = L.geoJSON(processed).getLayers()[0] as any;

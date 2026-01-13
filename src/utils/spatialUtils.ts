@@ -30,13 +30,13 @@ export const handlePolygonOverlap = (
 
   for (const poly of existing) {
 
-    // ❌ Full enclosure → block
+    // Full enclosure → block
     if (turf.booleanContains(current, poly)) {
       notifyError('Shape cannot fully enclose another shape');
       return null;
     }
 
-    // ✂ Trim only real overlaps
+    //  Trim only real overlaps
     if (turf.booleanOverlap(current, poly)) {
       const diff = turf.difference(
         turf.featureCollection([current, poly])
