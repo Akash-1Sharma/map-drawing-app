@@ -11,3 +11,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.leaflet-draw-toolbar a {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.leaflet-draw-toolbar a:hover {
+  background-color: #ede6e6;
+}
+
+.leaflet-bar a {
+  border-radius: 1px !important;
+  border-color: black;
+}
+

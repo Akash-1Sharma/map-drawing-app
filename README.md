@@ -1,46 +1,205 @@
-# Getting Started with Create React App
+Map Drawing Application (React + TypeScript)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A frontend web application built with React.js and TypeScript that renders OpenStreetMap free tiles and allows users to draw, edit, manage, and export spatial features while enforcing non-overlapping polygon rules.
 
-## Available Scripts
+This project demonstrates frontend engineering skills, spatial reasoning, clean code structure, and good UX practices.
 
-In the project directory, you can run:
+Live Demo
 
-### `npm start`
+Hosted Link:
+(Add your Vercel / Netlify / GitHub Pages URL here)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Tech Stack
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+React.js (with TypeScript)
 
-### `npm test`
+Leaflet & react-leaflet
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+react-leaflet-draw (drawing & editing tools)
 
-### `npm run build`
+Turf.js (spatial operations)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+React Toastify (UI notifications)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+OpenStreetMap (free map tiles)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Features
+Map Rendering
 
-### `npm run eject`
+OpenStreetMap free tiles
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Smooth zooming and panning
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Clean, responsive UI
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Drawing Tools
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Users can draw:
 
-## Learn More
+Polygon
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Rectangle
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Circle
+
+Line String
+
+Drawing tools are available via an inline toolbar (no modal popups).
+
+Spatial Constraints (Core Logic)
+Non-Overlapping Rule (Polygonal Shapes Only)
+
+Applies to:
+
+Polygon
+
+Rectangle
+
+Circle (converted to polygon internally)
+
+Rules:
+
+Full enclosure is blocked (error shown)
+
+Partial overlap is auto-trimmed
+
+Valid shapes are accepted
+
+Line Strings
+
+Line Strings are excluded from overlap rules
+
+They can freely cross or overlap any shape
+
+Circle Handling (Important Detail)
+
+Leaflet circles are not true GeoJSON shapes.
+To enable accurate spatial checks:
+
+Circles are converted into polygon buffers using Turf.js
+
+All overlap logic works on polygon geometry
+
+Editing & Validation
+
+Shapes can be edited
+
+On edit:
+
+Geometry is backed up
+
+Rules are re-validated
+
+Invalid edits are rolled back automatically
+
+Line edits are always allowed
+
+Deleting Shapes
+
+Single or multiple shapes can be deleted
+
+State stays fully synchronized
+
+Clean UX with one toast notification per delete action
+
+Export GeoJSON
+
+Export all drawn features as a GeoJSON file
+
+Includes:
+
+Geometry
+
+Shape type as a property
+
+Suitable for GIS tools like QGIS or Mapbox
+
+Dynamic Configuration
+
+Maximum allowed shapes per type can be changed easily in code:
+
+// src/config/shapeLimits.ts
+export const SHAPE_LIMITS = {
+  polygon: 10,
+  rectangle: 5,
+  circle: 5,
+  polyline: 20,
+};
+
+
+No hard-coded limits in logic.
+
+Polygon Overlap Logic (Explanation)
+
+The overlap logic is implemented using Turf.js:
+
+Convert all polygon-like shapes into GeoJSON polygons
+
+For each new or edited shape:
+
+Check full enclosure using booleanContains
+
+Check any intersection using booleanIntersects
+
+If intersection exists:
+
+Use turf.difference() to auto-trim overlapping area
+
+If fully enclosed:
+
+Block creation/edit and show error
+
+This ensures spatial correctness while maintaining good UX.
+
+Code is organized for clarity, scalability, and maintainability.
+
+Setup & Run Locally
+Clone Repository
+git clone https://github.com/<your-username>/map-drawing-app.git
+cd map-drawing-app
+
+Install Dependencies
+npm install
+
+Start Development Server
+npm start
+
+
+App runs at:
+👉 http://localhost:3000
+
+📄 Sample GeoJSON Output
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [...]
+      },
+      "properties": {
+        "shapeType": "polygon"
+      }
+    }
+  ]
+}
+
+UI & UX Highlights
+
+Floating instruction panel
+
+Color-coded shapes
+
+Toast notifications (no blocking alerts)
+
+Clean, professional layout
+
+Smooth interaction flow
+
+👤 Author
+
+Akash Sharma
+Frontend Developer
+
+GitHub: https://github.com/Akash-1Sharma
